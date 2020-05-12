@@ -1,20 +1,18 @@
 /** @format */
 
-import { validateDateTime, validateEmail } from "../validators/index.js";
-import { startAgenda, createNewTask } from "../agenda/index.js";
-
+import { CONSTANT_OK } from "../utils/constants";
 import express from "express";
+import { newTaskValidator } from "../validators/index.js";
 
 const router = express.Router();
 
-startAgenda();
-
-router.post("/new-task", validateDateTime, validateEmail, async (req, res) => {
+router.post("/new-task", newTaskValidator, async (req, res) => {
 	const { description, dateTime, email } = req.body;
+	const { createTask } = req.app.locals.settings;
 
-	createNewTask("10 seconds", email, description);
+	createTask();
 
-	res.status(200).send(`${description} ${dateTime} ${email}`);
+	res.status(CONSTANT_OK).json(`${description} ${dateTime} ${email}`);
 });
 
 export default router;
