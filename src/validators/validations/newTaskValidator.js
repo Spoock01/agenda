@@ -9,7 +9,7 @@ const newTaskValidator = async (req, res, next) => {
 	} catch (error) {
 		return res
 			.status(CONSTANT_BAD_REQUEST)
-			.json({ status: CONSTANT_BAD_REQUEST, error });
+			.json({ status: CONSTANT_BAD_REQUEST, error: error.details });
 	}
 	next();
 };

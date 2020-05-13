@@ -6,16 +6,19 @@ import nodemailer from "nodemailer";
 let transporter;
 
 export const createTransport = () => {
-	console.log(env.USER_EMAIL);
-	console.log(env.PASSWORD);
+	console.log(`[EMAIL_SERVICE] Creating transport...`);
 
-	transporter = nodemailer.createTransport({
-		service: "gmail",
-		auth: {
-			user: env.USER_EMAIL,
-			pass: env.PASSWORD
-		}
-	});
+	try {
+		transporter = nodemailer.createTransport({
+			service: "gmail",
+			auth: {
+				user: env.USER_EMAIL,
+				pass: env.PASSWORD
+			}
+		});
+	} catch (error) {
+		console.log(`[EMAIL_SERVICE] - Failed! ${error}`);
+	}
 };
 
 export const emailSender = async (destiny, message) => {
@@ -28,7 +31,7 @@ export const emailSender = async (destiny, message) => {
 
 	console.log(`Sending email to ${destiny} with ${message}`);
 
-	transporter.sendMail(mailOptions, (error, info) => {
+	await transporter.sendMail(mailOptions, (error, info) => {
 		if (error) {
 			console.log(`Error in sendMail: ${error}`);
 		} else {

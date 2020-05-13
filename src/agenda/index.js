@@ -1,9 +1,9 @@
 /** @format */
 
 import Agenda from "agenda";
-import env from "../env/index.js";
-import { emailSender } from "../utils/EmailSender/index.js";
 import { createTransport } from "../utils/EmailSender/index.js";
+import { emailSender } from "../utils/EmailSender/index.js";
+import env from "../env/index.js";
 
 const createAgenda = () => {
 	const connectionString =
@@ -21,13 +21,14 @@ const createAgenda = () => {
 		console.log(`[AGENDA] - Starting agenda services!`);
 		try {
 			await agenda.start();
+			createTransport();
 		} catch (error) {
 			throw new Error(`[AGENDA] - Error starting service! ${error}`);
 		}
 		console.log(`[AGENDA] - Agenda successfully started!`);
 	};
 
-	const createNewTask = async (dateTimeMinutes, email, description) => {
+	const createNewTask = async ({ dateTime, email, description }) => {
 		console.log(`[AGENDA] - RECEIVED`);
 
 		agenda.define(
@@ -35,16 +36,31 @@ const createAgenda = () => {
 			{ priority: "high", concurrency: 10 },
 			async (job) => {
 				const { to } = job.attrs.data;
-				await emailClient.send({
-					to,
-					from: "example@example.com",
-					subject: "Email Report",
-					body: "..."
-				});
+				try {
+					await emailSender(to, description);
+				} catch (error) {
+					console.log(error);
+				}
+
+				console.log("Task running to: " + to);
 			}
 		);
 
-		// await agenda.schedule(dateTimeMinutes, description, { to: email });
+		var dateTimeNow = new Date();
+		dateTimeNow.setHours(12);
+		var dateTimeMinutes = new Date(dateTime);
+		dateTimeMinutes.setHours(12);
+
+		var secNow = dateTimeNow.getTime() / 1000;
+		var secFut = dateTimeMinutes.getTime() / 1000;
+		var secondsFromNow = Math.ceil(secFut - secNow);
+
+		console.log(`The task will run in ${secondsFromNow} seconds`);
+
+		await agenda.schedule(`in ${secondsFromNow} seconds`, description, {
+			to: email,
+			description
+		});
 	};
 
 	return {
